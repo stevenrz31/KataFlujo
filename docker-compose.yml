@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kata-mysql
+    environment: 
+      MYSQL_ROOT_PASSWORD: kata123
+      MYSQL_DATABASE: kata_flujo
+      MYSQL_USER: kata_user
+      MYSQL_PASSWORD: kata_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - kata-network
+  backend:
+    build: ./Kata-Flujo
+    container_name: kata-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/kata_flujo?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: kata_user
+      SPRING_DATASOURCE_PASSWORD: kata_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      TZ: America/Bogota
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - kata-network
+  frontend:
+    build: ./kata-flujo-frontend
+    container_name: kata-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - kata-network
+volumes:
+  mysql_data:
+networks:
+  kata-network:
+    driver: bridge
+
